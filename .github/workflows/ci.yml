@@ -1,0 +1,121 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  shellcheck:
+    name: Shell Script Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: Run shellcheck on all scripts
+        run: |
+          echo "Validating shell scripts..."
+          find software/scripts -name "*.sh" -type f | while read script; do
+            echo "Checking: $script"
+            shellcheck -x "$script" || exit 1
+          done
+          echo "All shell scripts passed shellcheck validation"
+
+  markdown-lint:
+    name: Markdown Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install markdownlint-cli
+        run: npm install -g markdownlint-cli
+
+      - name: Lint markdown files
+        run: |
+          markdownlint '**/*.md' --ignore node_modules --ignore software/generated || true
+        continue-on-error: true
+
+  link-check:
+    name: Link Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install markdown-link-check
+        run: npm install -g markdown-link-check
+
+      - name: Check internal links in documentation
+        run: |
+          echo "Checking internal documentation links..."
+          find . -name "*.md" -not -path "./node_modules/*" -not -path "./software/generated/*" | while read file; do
+            echo "Checking links in: $file"
+            markdown-link-check "$file" --config .github/markdown-link-check.json 2>/dev/null || true
+          done
+        continue-on-error: true
+
+  yaml-validate:
+    name: YAML Configuration Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Validate YAML configuration files
+        run: |
+          echo "Validating YAML configuration files..."
+          for yaml_file in software/configs/defaults.yaml software/configs/profiles/*.yaml; do
+            if [ -f "$yaml_file" ]; then
+              echo "Validating: $yaml_file"
+              yq eval '.' "$yaml_file" > /dev/null || exit 1
+            fi
+          done
+          echo "All YAML files are valid"
+
+  config-generation:
+    name: Configuration Generation Test
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          brew install yq gettext
+          brew link --force gettext
+
+      - name: Test config generation
+        run: |
+          echo "Testing configuration generation..."
+          make config PROFILE=studio
+          test -f software/generated/config.sh || exit 1
+          test -f software/generated/config.json || exit 1
+          echo "Configuration generation successful"
+
+      - name: Test health check script syntax
+        run: |
+          source software/generated/config.sh
+          echo "Config loaded successfully"
+          bash -n software/scripts/health-check.sh
+          echo "Health check script syntax valid"

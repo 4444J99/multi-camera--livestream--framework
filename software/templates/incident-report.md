@@ -15,6 +15,19 @@
 | **Stream/Event** | <!-- Name of the stream or event --> |
 | **Reported By** | <!-- Your name --> |
 
+### Severity Definitions
+
+| Level | Definition | Examples | Response Time |
+|-------|------------|----------|---------------|
+| **Critical** | Stream is down or completely unusable; viewers cannot watch | Complete audio/video loss, platform disconnection, system crash, encoding failure | Immediate (drop everything) |
+| **Major** | Significant quality degradation affecting viewer experience | Persistent frame drops (>5%), audio sync issues, single camera failure, visible artifacts | Within 2 minutes |
+| **Minor** | Noticeable issues that don't significantly impact viewing | Momentary glitches (<10s), minor audio level fluctuation, brief frame stutter, cosmetic issues | When convenient (don't interrupt flow) |
+
+**Severity Selection Guide:**
+- If viewers are complaining or leaving → **Critical**
+- If the issue is visible/audible but stream continues → **Major**
+- If you noticed it but viewers likely didn't → **Minor**
+
 ---
 
 ## Incident Summary

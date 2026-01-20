@@ -1,0 +1,298 @@
+# broadcast.yaml - Professional broadcast multi-camera configuration
+#
+# High-end setup for professional live production:
+#   - 8 cameras with SDI capture
+#   - 32-channel Dante audio
+#   - Redundant streaming to multiple platforms
+#   - Discrete GPU for graphics/encoding
+#
+# Target: broadcast facilities, large venues, professional production houses
+# Budget: ~$50,000+
+
+profile:
+  name: "broadcast"
+  description: "Professional broadcast multi-camera setup"
+  version: "1.0.0"
+
+# =============================================================================
+# PRODUCTION REQUIREMENTS (broadcast-grade)
+# =============================================================================
+
+production:
+  video:
+    cameras: 8                      # Full multi-camera coverage
+    capture_resolution: "2160p60"   # 4K60 for production flexibility
+    codec: "prores"                 # Broadcast-grade codec for recording
+  audio:
+    input_channels: 32              # Full mixing desk capacity
+    output_channels: 16             # Multi-bus output (program, monitor, IFB, etc.)
+    sample_rate: 48000
+    bit_depth: 24
+  streaming:
+    output_resolution: "1080p60"
+    bitrate_kbps: 8000              # High quality for CDN distribution
+    platforms: 3                    # Simultaneous multi-platform (YT, Twitch, FB)
+  recording:
+    format: "prores"
+    resolution: "2160p60"           # Archive at full resolution
+
+# =============================================================================
+# HARDWARE CONFIGURATION (broadcast-grade)
+# =============================================================================
+
+hardware:
+  # ---------------------------------------------------------------------------
+  # Compute - high-performance workstation
+  # ---------------------------------------------------------------------------
+  compute:
+    category: "workstation"
+    ram_gb: 192
+    cpu_cores: 24
+    gpu_category: "discrete"        # Dedicated GPU for encoding/graphics
+    gpu_vram_gb: 16
+    storage_type: "nvme"
+
+  # ---------------------------------------------------------------------------
+  # Video Capture - SDI routing
+  # ---------------------------------------------------------------------------
+  video_capture:
+    category: "sdi_capture"         # Professional SDI workflow
+    inputs: 8
+    max_resolution: "2160p60"
+    interface: "sdi"                # 12G-SDI for 4K60
+    detection_patterns:
+      - "decklink"
+      - "blackmagic"
+      - "aja"
+    enclosure:
+      category: "rack_chassis"
+      interface: "pcie"             # Direct PCIe (not Thunderbolt) for bandwidth
+      detection_patterns:
+        - "decklink"
+        - "ultrastudio"
+
+  # ---------------------------------------------------------------------------
+  # SDI Router - centralized video routing
+  # ---------------------------------------------------------------------------
+  sdi_router:
+    category: "video_router"
+    inputs: 16
+    outputs: 16
+    format: "12G-SDI"
+    detection_patterns:
+      - "videohub"
+      - "ross"
+      - "for-a"
+
+  # ---------------------------------------------------------------------------
+  # Audio Interface - large format Dante
+  # ---------------------------------------------------------------------------
+  audio_interface:
+    category: "dante_interface"
+    channels_in: 64
+    channels_out: 64
+    sample_rates:
+      - 44100
+      - 48000
+      - 96000
+    network_audio: true
+    detection_patterns:
+      - "motu"
+      - "focusrite"
+      - "yamaha"
+    preference_pane_paths:
+      - "/Library/PreferencePanes/MOTU Audio.prefPane"
+
+  # ---------------------------------------------------------------------------
+  # Network - 10GbE for Dante and NDI
+  # ---------------------------------------------------------------------------
+  network:
+    category: "10gbe"
+    bandwidth_gbps: 10
+    dedicated_audio_network: true   # Separate VLAN for Dante
+    primary_interface: "en0"
+    dante_interface: "en1"          # Dedicated NIC for audio network
+    ndi_interface: "en2"            # Dedicated NIC for NDI (if used)
+
+# =============================================================================
+# SOFTWARE CONFIGURATION (broadcast workflow)
+# =============================================================================
+
+software:
+  required:
+    video_mixer:
+      category: "streaming_switcher"
+      capabilities:
+        - "multi_source"
+        - "encoding"
+        - "streaming"
+        - "recording"
+        - "multiview"               # ISO monitoring
+        - "macro"                   # Automation
+      min_sources: 8
+      bundle_id: "com.obsproject.obs-studio"  # Or vMix, Wirecast for Windows
+      process_names:
+        - "OBS"
+        - "obs"
+      role: "Video mixing, encoding, streaming"
+      launch_order: 5
+
+    audio_mixer:
+      category: "daw"
+      capabilities:
+        - "multi_channel"
+        - "network_audio"
+        - "mixing"
+        - "broadcast_loudness"      # LUFS metering
+      min_channels: 32
+      bundle_id: "com.ableton.live"
+      process_names:
+        - "Ableton Live"
+        - "Live"
+      role: "Audio mixing, network audio master"
+      launch_order: 4
+
+    audio_routing:
+      category: "network_audio_controller"
+      capabilities:
+        - "routing"
+        - "monitoring"
+        - "clock_sync"
+        - "redundancy"              # Primary/secondary network paths
+      bundle_id: "com.audinate.dante.DanteController"
+      process_names:
+        - "Dante"
+        - "DanteController"
+      role: "Audio network routing"
+      launch_order: 2
+
+    video_routing:
+      category: "video_router_control"
+      capabilities:
+        - "matrix_routing"
+        - "salvos"                  # Preset routing states
+      bundle_id: "com.blackmagicdesign.videohubcontrol"
+      process_names:
+        - "Videohub"
+      role: "SDI video routing control"
+      launch_order: 3
+
+  optional:
+    graphics:
+      category: "broadcast_graphics"
+      capabilities:
+        - "realtime_rendering"
+        - "ndi_output"
+        - "data_binding"            # Live data integration
+      bundle_id: "org.blenderfoundation.blender"
+      process_names:
+        - "Blender"
+      role: "Real-time broadcast graphics"
+      launch_order: 6
+
+    tally:
+      category: "tally_system"
+      capabilities:
+        - "camera_tally"
+        - "multiview_tally"
+      role: "Camera tally indicator system"
+      launch_order: 1
+
+    prompter:
+      category: "teleprompter"
+      capabilities:
+        - "script_display"
+        - "remote_control"
+      role: "Talent prompter system"
+
+# =============================================================================
+# THRESHOLDS (relaxed for high-end hardware)
+# =============================================================================
+
+thresholds:
+  min_disk_space_gb: 500            # Large for 4K recording
+  min_memory_free_percent: 10
+  max_cpu_usage_percent: 85
+
+# =============================================================================
+# TIMING (longer for complex startup)
+# =============================================================================
+
+timing:
+  launch_delay_seconds: 5
+  quit_timeout_seconds: 15
+
+# =============================================================================
+# STREAMING ENDPOINTS (multi-platform)
+# =============================================================================
+
+streaming:
+  primary:
+    platform: "YouTube"
+    rtmp_endpoint: "a.rtmp.youtube.com"
+    backup_endpoint: "b.rtmp.youtube.com"
+    bitrate_kbps: 8000
+  secondary:
+    platform: "Twitch"
+    rtmp_endpoint: "live.twitch.tv"
+    bitrate_kbps: 6000
+  tertiary:
+    platform: "Facebook"
+    rtmp_endpoint: "live-api-s.facebook.com"
+    bitrate_kbps: 6000
+  cdn:
+    platform: "Custom CDN"
+    rtmp_endpoint: "${CDN_RTMP_URL}"  # Environment variable for security
+    srt_endpoint: "${CDN_SRT_URL}"    # SRT for reliable delivery
+
+# =============================================================================
+# REDUNDANCY CONFIGURATION
+# =============================================================================
+
+redundancy:
+  # Dual-path streaming
+  stream_backup: true
+  # Recording to two destinations
+  dual_recording: true
+  recording_paths:
+    primary: "/Volumes/RecordingSSD/live"
+    backup: "/Volumes/BackupRAID/live"
+  # Network redundancy
+  dante_redundancy: true            # Primary + Secondary Dante network
+  # Power
+  ups_monitoring: true
+
+# =============================================================================
+# OPERATIONAL NOTES
+# =============================================================================
+
+notes:
+  pre_stream: |
+    1. Verify UPS status and runtime
+    2. Power on audio interface (Dante clock master)
+    3. Power on SDI router
+    4. Verify all camera feeds on router
+    5. Launch Dante Controller, verify clock sync
+    6. Launch audio mixer, load show file
+    7. Launch video router control, verify routing
+    8. Launch video mixer
+    9. Run health-check.sh
+    10. Test multi-platform stream keys
+  post_stream: |
+    1. Stop all streams
+    2. Verify recordings completed successfully
+    3. Copy recordings to backup location
+    4. Save audio mixer project
+    5. Run shutdown-studio.sh
+    6. Generate post-show report
+  safety_critical: |
+    - NEVER exceed thermal limits on compute hardware
+    - Dante clock sync MUST show green before going live
+    - Recording MUST be active before streaming starts
+    - Backup stream should be tested before primary
+  technical_director_checklist: |
+    - All cameras responding to tally
+    - Intercom system operational
+    - IFB feeds confirmed
+    - Graphics system loaded and tested
+    - Lower thirds database synchronized

@@ -1,0 +1,214 @@
+# budget.yaml - Cost-effective streaming configuration
+#
+# Affordable fixed installation using USB capture and USB audio.
+# Target budget: ~$3,000 (vs $20k studio profile)
+# Best for: small venues, churches, schools, community events
+#
+# Trade-offs accepted:
+#   - USB capture latency (~100ms vs PCIe ~16ms)
+#   - No network audio (simplified routing)
+#   - 1080p output (4K capture not cost-effective at this tier)
+
+profile:
+  name: "budget"
+  description: "Cost-effective streaming setup (~$3k budget)"
+  version: "1.0.0"
+
+# =============================================================================
+# PRODUCTION REQUIREMENTS (what the show needs)
+# =============================================================================
+
+production:
+  video:
+    cameras: 3                      # Three angles covers most needs
+    capture_resolution: "1080p30"   # HD is sufficient for most streams
+    codec: "h264"
+  audio:
+    input_channels: 4               # 2 mics + 2 line inputs typical
+    output_channels: 2              # Stereo mix
+    sample_rate: 48000
+    bit_depth: 24
+  streaming:
+    output_resolution: "1080p30"
+    bitrate_kbps: 4500              # Optimized for viewer experience vs bandwidth
+    platforms: 1
+
+# =============================================================================
+# HARDWARE CONFIGURATION
+# =============================================================================
+
+hardware:
+  # ---------------------------------------------------------------------------
+  # Compute - Mac mini (entry point for Apple Silicon)
+  # ---------------------------------------------------------------------------
+  compute:
+    category: "workstation"
+    ram_gb: 16                      # Base M2 Mac mini config
+    cpu_cores: 8
+    gpu_category: "integrated"
+    gpu_vram_gb: 0
+    storage_type: "nvme"
+
+  # ---------------------------------------------------------------------------
+  # Video Capture - USB capture cards
+  # ---------------------------------------------------------------------------
+  video_capture:
+    category: "usb_capture"
+    inputs: 3
+    max_resolution: "1080p60"
+    interface: "hdmi"
+    detection_patterns:
+      - "elgato"
+      - "cam link"
+      - "avermedia"
+      - "magewell"
+    enclosure: null                 # No external chassis needed
+
+  # ---------------------------------------------------------------------------
+  # Audio Interface - USB audio (no Dante)
+  # ---------------------------------------------------------------------------
+  audio_interface:
+    category: "usb_interface"
+    channels_in: 4
+    channels_out: 2
+    sample_rates:
+      - 44100
+      - 48000
+    network_audio: false
+    detection_patterns:
+      - "focusrite"
+      - "scarlett"
+      - "behringer"
+      - "usb audio"
+    preference_pane_paths: []
+
+  # ---------------------------------------------------------------------------
+  # Network
+  # ---------------------------------------------------------------------------
+  network:
+    category: "gigabit_ethernet"
+    bandwidth_gbps: 1
+    dedicated_audio_network: false
+    primary_interface: "en0"
+
+# =============================================================================
+# SOFTWARE CONFIGURATION
+# =============================================================================
+
+software:
+  required:
+    video_mixer:
+      category: "streaming_switcher"
+      capabilities:
+        - "multi_source"
+        - "encoding"
+        - "streaming"
+        - "recording"
+      min_sources: 3
+      bundle_id: "com.obsproject.obs-studio"
+      process_names:
+        - "OBS"
+        - "obs"
+      role: "Video mixing, encoding, streaming"
+      launch_order: 2
+
+    # Using OBS audio mixer instead of separate DAW
+    audio_mixer:
+      category: "integrated"        # Uses OBS built-in mixer
+      capabilities:
+        - "mixing"
+        - "monitoring"
+      min_channels: 4
+      bundle_id: "com.obsproject.obs-studio"  # Same as video mixer
+      process_names:
+        - "OBS"
+      role: "Audio mixing via OBS"
+      launch_order: 2               # Same as video mixer (it's the same app)
+
+  optional:
+    # Standalone DAW for advanced audio (optional upgrade path)
+    advanced_audio:
+      category: "daw"
+      capabilities:
+        - "multi_channel"
+        - "mixing"
+      bundle_id: "com.apple.garageband"  # Free with macOS
+      process_names:
+        - "GarageBand"
+      role: "Advanced audio processing if needed"
+
+# =============================================================================
+# THRESHOLDS (conservative for lower-spec hardware)
+# =============================================================================
+
+thresholds:
+  min_disk_space_gb: 30
+  min_memory_free_percent: 20       # More conservative for 16GB system
+  max_cpu_usage_percent: 75
+
+# =============================================================================
+# TIMING
+# =============================================================================
+
+timing:
+  launch_delay_seconds: 3
+  quit_timeout_seconds: 10
+
+# =============================================================================
+# STREAMING ENDPOINTS
+# =============================================================================
+
+streaming:
+  primary:
+    platform: "YouTube"
+    rtmp_endpoint: "a.rtmp.youtube.com"
+    backup_endpoint: "b.rtmp.youtube.com"
+
+# =============================================================================
+# BUDGET BREAKDOWN (approximate 2025 prices)
+# =============================================================================
+
+budget:
+  hardware:
+    - item: "M2 Mac mini (16GB/256GB)"
+      cost: 800
+    - item: "Elgato Cam Link 4K x3"
+      cost: 390
+    - item: "Focusrite Scarlett 4i4"
+      cost: 230
+    - item: "Shure SM58 x2"
+      cost: 200
+    - item: "Consumer cameras x3 (used Canon M50)"
+      cost: 900
+    - item: "HDMI cables, stands, misc"
+      cost: 200
+  total_estimate: 2720
+  notes: |
+    Budget can be reduced further by:
+    - Using integrated webcams instead of capture cards
+    - Single camera setup ($1,500)
+    - Refurbished/used equipment
+
+# =============================================================================
+# OPERATIONAL NOTES
+# =============================================================================
+
+notes:
+  pre_stream: |
+    1. Connect USB audio interface
+    2. Connect USB capture cards (use powered USB hub if needed)
+    3. Power on cameras
+    4. Launch OBS
+    5. Verify all sources appear
+  post_stream: |
+    1. Stop streaming in OBS
+    2. Save recording if applicable
+    3. Power off cameras to preserve battery
+  limitations: |
+    - Higher latency than PCIe capture (~100ms)
+    - USB bandwidth limits (max 3 1080p30 streams reliably)
+    - No Dante audio networking
+    - Single DAW (OBS mixer) may limit audio flexibility
+  upgrade_path: |
+    Next tier: Add Thunderbolt dock + DeckLink Mini for lower latency
+    Full upgrade: See 'studio' profile

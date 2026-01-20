@@ -2,7 +2,7 @@
 
 > Per-camera configuration for the Multi-Camera Livestream Framework.
 
-**Last Updated:** <!-- TODO: Update date -->
+**Last Updated:** 2025-01-20
 **Version:** 1.0.0
 
 ---
@@ -31,9 +31,9 @@ Apply these settings to **all cameras** for consistency:
 | Setting | Value | Notes |
 |---------|-------|-------|
 | Mode | Manual or Aperture Priority | Consistency > auto |
-| ISO | <!-- TODO --> | Match across cameras |
+| ISO | 400-1600 (start at 800) | Match across cameras; adjust for lighting |
 | Shutter Speed | 1/120 for 60fps | Double frame rate rule |
-| Aperture | <!-- TODO --> | Based on DOF needs |
+| Aperture | f/4.0-f/5.6 | Balance DOF with light; wider for low-light |
 
 ### White Balance
 
@@ -56,72 +56,129 @@ Apply these settings to **all cameras** for consistency:
 
 ## Per-Camera Configuration
 
-### Camera 1: <!-- TODO: Model Name -->
+### Camera 1: Panasonic Lumix G7 (Reference Example)
 
-**Role:** <!-- TODO: e.g., Wide shot, Host camera -->
-**Position:** <!-- TODO: e.g., Front of desk, 10ft back -->
-**Lens:** <!-- TODO: e.g., 24-70mm f/2.8 -->
+**Role:** Wide shot / Establishing shot
+**Position:** Center, 12ft back, elevated 8ft on truss mount
+**Lens:** Panasonic 12-35mm f/2.8 II (24-70mm equivalent)
 
 #### Settings
 
 ```
 Resolution: 1080p60
-HDMI Output: Clean
-White Balance: 5600K
+HDMI Output: Clean (no info display)
+White Balance: 5600K (daylight LED panels)
 ISO: 800
 Aperture: f/4.0
 Shutter: 1/120
 
-Picture Profile: Standard
-Contrast: 0
+Photo Style: Natural
+Contrast: -1
 Saturation: 0
-Sharpness: 0
+Sharpness: -1
+Noise Reduction: -2
 
-Focus: Manual / Continuous (depending on movement)
+Focus: Manual (locked at hyperfocal distance)
 Image Stabilization: Off (tripod mounted)
+HDCP: Disabled (critical for DeckLink capture)
 
-Power: AC adapter (recommended for long sessions)
+Power: DMW-AC10 AC adapter + DMW-DCC8 DC coupler
+Memory Card: Removed (prevents record prompt)
+```
+
+#### Menu Navigation (Lumix G7 Specific)
+
+```
+Menu → Setup → TV Connection
+├── HDMI Mode: AUTO (defaults to 1080p when HDMI connected)
+├── VIERA Link: OFF
+└── Info Display: OFF (critical for clean HDMI)
+
+Menu → Rec → Photo Style → Natural
+├── Contrast: -1
+├── Sharpness: -1
+├── Noise Reduction: -2
+├── Saturation: 0
+└── Hue: 0
+
+Menu → Motion Picture → Rec Quality
+├── AVCHD: FHD/60p
+└── (HDMI output follows this setting)
+
+Menu → Setup → Economy
+└── Power Save: OFF
 ```
 
 #### Notes
 
-<!-- TODO: Any specific notes about this camera -->
--
--
+- **HDCP must be disabled** for DeckLink capture to work; this camera has no HDCP on live HDMI output (confirmed compatible)
+- Firmware v2.5 tested and verified
+- AC adapter eliminates battery heat and runtime concerns
+- 12-35mm f/2.8 at f/4.0 provides sharp edge-to-edge performance
+- Use DMW-RSL1 remote shutter release to start recording without touching camera
+- Sensor crop factor 2x means 12mm = 24mm equivalent field of view
 
 ---
 
-### Camera 2: <!-- TODO: Model Name -->
+### Camera 2: Sony A6400 (Example Mirrorless)
 
-**Role:** <!-- TODO -->
-**Position:** <!-- TODO -->
-**Lens:** <!-- TODO -->
+**Role:** Medium shot / Speaker close-up
+**Position:** Stage right, 8ft back, tripod at eye level
+**Lens:** Sony E 18-105mm f/4 G OSS (27-157mm equivalent)
 
 #### Settings
 
 ```
 Resolution: 1080p60
-HDMI Output: Clean
-White Balance: 5600K
-ISO: 800
+HDMI Output: Clean (HDMI Info Display: Off)
+White Balance: 5600K (manual Kelvin)
+ISO: 640
 Aperture: f/4.0
-Shutter: 1/120
+Shutter: 1/125
 
-Picture Profile: Standard
+Picture Profile: PP Off (neutral for matching)
+Creative Style: Standard
 Contrast: 0
 Saturation: 0
 Sharpness: 0
 
-Focus: Manual / Continuous
-Image Stabilization: Off
+Focus: Continuous AF (Face/Eye AF enabled for presenter tracking)
+Image Stabilization: Off (tripod mounted; OSS disabled saves battery)
 
-Power: AC adapter
+Power: AC-PW20 AC adapter
+Memory Card: Removed
+```
+
+#### Menu Navigation (Sony A6400 Specific)
+
+```
+Menu → Setup → HDMI Settings
+├── HDMI Resolution: 1080p
+├── HDMI Output: 4:2:2 8-bit
+├── HDMI Info Display: Off
+├── TC Output: Off
+└── REC Control: Off
+
+Menu → Camera → Picture Profile
+└── Off (or use PP1 set to neutral values)
+
+Menu → Camera → AF → Face/Eye AF
+├── Face/Eye AF Set: On
+├── Face Dtct Frm Disp: Off (no overlay on HDMI)
+└── Subject: Human
+
+Menu → Setup → Power Setting
+├── Auto Pwr OFF Temp: High
+└── Auto Power Off: Off
 ```
 
 #### Notes
 
--
--
+- Sony's "High" temperature threshold allows longer runtime before overheating
+- Face/Eye AF works well for presenters who move; keep detection frame overlay off
+- PP Off provides most neutral image for multi-camera matching
+- USB power delivery does not work during HDMI output; must use AC adapter
+- Clean HDMI verified with DeckLink at 1080p60
 
 ---
 
