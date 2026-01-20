@@ -1,66 +1,78 @@
-# studio.yaml - Primary M1 Mac Studio streaming configuration
+# studio.yaml - Primary workstation multi-camera 4K streaming configuration
 #
-# This profile defines the complete hardware and software setup for
-# the main streaming workstation. Uses category-based ontology for
-# flexible hardware/software abstraction.
+# This profile follows production-centric ontology:
+#   1. PRODUCTION requirements define what the show needs
+#   2. HARDWARE specs must meet/exceed computed requirements
+#   3. SOFTWARE identified by category and capabilities
 #
-# Categories allow scripts to reference hardware by role (e.g., "audio_interface")
-# rather than specific model, enabling profile switching without script changes.
+# All hardware identified by category (role), not brand names.
+# Detection patterns enable hardware discovery without brand coupling.
 
 profile:
   name: "studio"
-  description: "Primary M1 Mac Studio multi-camera 4K streaming setup"
+  description: "Primary workstation multi-camera 4K streaming setup"
   version: "1.0.0"
 
 # =============================================================================
-# HARDWARE CONFIGURATION
+# PRODUCTION REQUIREMENTS (what the show needs)
+# =============================================================================
+
+production:
+  video:
+    cameras: 4                      # Number of camera angles
+    capture_resolution: "2160p30"   # Per-camera capture resolution (4K30)
+    codec: "h264"                   # Capture codec
+  audio:
+    input_channels: 8               # Total audio inputs needed
+    output_channels: 2              # Stereo mix output
+    sample_rate: 48000
+    bit_depth: 24
+  streaming:
+    output_resolution: "1080p60"
+    bitrate_kbps: 6000
+    platforms: 1                    # Simultaneous stream destinations
+
+# =============================================================================
+# HARDWARE CONFIGURATION (must meet/exceed production requirements)
 # =============================================================================
 
 hardware:
-  # -------------------------------------------------------------------------
-  # Computer
-  # -------------------------------------------------------------------------
-  computer:
-    category: "workstation"
-    model: "Mac Studio"
-    chip: "M1 Ultra"
+  # ---------------------------------------------------------------------------
+  # Compute - streaming/mixing workstation
+  # ---------------------------------------------------------------------------
+  compute:
+    category: "workstation"         # workstation | laptop | server | distributed
     ram_gb: 128
-    os_version: "14.2.1"
-    os_name: "Sonoma"
+    cpu_cores: 20
+    gpu_category: "integrated"      # integrated | discrete | none
+    gpu_vram_gb: 0                   # Shared with RAM for integrated
+    storage_type: "nvme"            # nvme | ssd | hdd
+    # Detection not needed - always present
 
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
   # Video Capture - PCIe card in Thunderbolt chassis
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
   video_capture:
-    category: "pcie_capture"
-    vendor: "Blackmagic Design"
-    model: "DeckLink Quad HDMI"
-    driver_version: "13.2"
-    driver_arch: "arm64"
+    category: "pcie_capture"        # pcie_capture | usb_capture | ndi | sdi
     inputs: 4
     max_resolution: "2160p30"
-    # Search patterns for hardware detection
+    interface: "hdmi"               # hdmi | sdi | ndi
     detection_patterns:
       - "decklink"
       - "blackmagic"
-    # Thunderbolt enclosure
+    # External enclosure (Thunderbolt chassis)
     enclosure:
-      vendor: "Sonnet"
-      model: "Echo Express SE I"
-      interface: "Thunderbolt 3"
+      category: "thunderbolt_chassis"
+      interface: "thunderbolt3"
       detection_patterns:
         - "echo"
         - "sonnet"
 
-  # -------------------------------------------------------------------------
-  # Audio Interface - Dante-enabled
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
+  # Audio Interface - network audio capable
+  # ---------------------------------------------------------------------------
   audio_interface:
-    category: "dante_interface"
-    vendor: "MOTU"
-    model: "8PRE-ES"
-    driver_version: "2.23.5"
-    dante_enabled: true
+    category: "dante_interface"     # dante_interface | usb_interface | pcie_audio
     channels_in: 24
     channels_out: 28
     sample_rates:
@@ -68,97 +80,113 @@ hardware:
       - 48000
       - 88200
       - 96000
-    # Search patterns for hardware detection
+    network_audio: true             # Dante/AVB/AES67 capable
     detection_patterns:
       - "motu"
     preference_pane_paths:
       - "/Library/PreferencePanes/MOTU Audio.prefPane"
       - "$HOME/Library/PreferencePanes/MOTU Audio.prefPane"
 
-  # -------------------------------------------------------------------------
-  # Network Equipment
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
+  # Network
+  # ---------------------------------------------------------------------------
   network:
-    dante_switch:
-      model: "Dedicated Gigabit Switch"
-      ports: 8
-      notes: "Isolated Dante network recommended"
+    category: "gigabit_ethernet"    # gigabit_ethernet | 10gbe | wifi
+    bandwidth_gbps: 1
+    dedicated_audio_network: true   # Separate VLAN for network audio
     primary_interface: "en0"
 
 # =============================================================================
-# SOFTWARE CONFIGURATION
+# SOFTWARE CONFIGURATION (by category, not by name)
 # =============================================================================
 
 software:
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
   # Required Applications
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
   required:
-    # DAW / Audio Mixer (Dante clock master)
-    daw_app:
-      category: "audio_mixer"
-      name: "Ableton Live"
-      bundle_id: "com.ableton.live"
-      version: "12.0.10"
-      process_names:
-        - "Ableton Live"
-        - "Live"
-        - "Ableton"
-      role: "Audio mixing, Dante clock master"
-      launch_order: 3
-
     # Video Mixer / Streaming Software
     video_mixer:
       category: "streaming_switcher"
-      name: "OBS Studio"
+      capabilities:
+        - "multi_source"
+        - "encoding"
+        - "streaming"
+        - "recording"
+      min_sources: 4                # Must support >= production.video.cameras
+      # Implementation details (for detection/launch)
       bundle_id: "com.obsproject.obs-studio"
-      version: "29.1.3"
       process_names:
         - "OBS"
         - "obs"
       role: "Video mixing, encoding, streaming"
       launch_order: 4
 
+    # DAW / Audio Mixer
+    audio_mixer:
+      category: "daw"
+      capabilities:
+        - "multi_channel"
+        - "network_audio"           # Dante/AVB support
+        - "mixing"
+      min_channels: 8               # Must support >= production.audio.input_channels
+      # Implementation details
+      bundle_id: "com.ableton.live"
+      process_names:
+        - "Ableton Live"
+        - "Live"
+        - "Ableton"
+      role: "Audio mixing, network audio clock master"
+      launch_order: 3
+
     # Audio Routing Controller
     audio_routing:
-      category: "dante_controller"
-      name: "Dante Controller"
+      category: "network_audio_controller"
+      capabilities:
+        - "routing"
+        - "monitoring"
+        - "clock_sync"
+      # Implementation details
       bundle_id: "com.audinate.dante.DanteController"
-      version: "4.5.3"
       process_names:
         - "Dante"
         - "DanteController"
       role: "Audio network routing and monitoring"
       launch_order: 1
 
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
   # Optional Applications
-  # -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------------
   optional:
-    # Dante Virtual Soundcard
-    dante_virtual_soundcard:
+    # Virtual Audio Driver
+    virtual_soundcard:
       category: "virtual_audio"
-      name: "Dante Virtual Soundcard"
+      capabilities:
+        - "network_audio_endpoints"
       bundle_id: "com.audinate.dante.DVS"
       process_names:
         - "DVS"
-      role: "Software-based Dante endpoints"
+      role: "Software-based network audio endpoints"
 
     # Device Discovery
     device_manager:
       category: "device_discovery"
-      name: "MOTU Discovery"
+      capabilities:
+        - "network_discovery"
+        - "configuration"
       bundle_id: "com.motu.MOTUDiscovery"
       process_names:
         - "MOTU"
         - "MOTUDiscovery"
-      role: "MOTU device management"
+      role: "Audio interface device management"
       launch_order: 2
 
     # 3D Graphics
     graphics:
       category: "3d_graphics"
-      name: "Blender"
+      capabilities:
+        - "realtime_rendering"
+        - "compositing"
       bundle_id: "org.blenderfoundation.blender"
       process_names:
         - "Blender"
@@ -184,17 +212,17 @@ streaming:
 
 notes:
   pre_stream: |
-    1. Power on MOTU 8PRE-ES first (Dante clock master)
-    2. Power on Echo Express chassis
-    3. Verify all HDMI sources connected
+    1. Power on audio interface first (network audio clock master)
+    2. Power on Thunderbolt chassis
+    3. Verify all video sources connected
     4. Run health-check.sh
   post_stream: |
-    1. Stop streaming in OBS
-    2. Save Ableton project
+    1. Stop streaming in video mixer
+    2. Save audio mixer project
     3. Run shutdown-studio.sh
     4. Power off hardware in reverse order
   hardware_shutdown_order:
     - "Cameras"
-    - "MOTU 8PRE-ES"
-    - "Echo Express Chassis"
-    - "Mac Studio (optional)"
+    - "Audio interface"
+    - "Thunderbolt chassis"
+    - "Computer (optional)"

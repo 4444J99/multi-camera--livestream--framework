@@ -27,12 +27,12 @@ This document provides the definitive software installation guide for the Multi-
 
 | Category | Software | Version | Purpose |
 |----------|----------|---------|---------|
-| Video Mixing | OBS Studio | 29.1.3 | Main production switcher |
-| Audio Mixing | Ableton Live | 12.0.10 | DAW, Dante clock master |
-| Audio Network | Dante Controller | 4.5.3 | Dante routing |
-| Video Capture | Desktop Video | 13.2 | DeckLink drivers |
-| Audio Interface | MOTU Drivers | 2.23.5 | 8PRE-ES support |
-| Graphics | Blender (optional) | - | Real-time graphics |
+| Video Mixing |  |  | Main production switcher |
+| Audio Mixing |  |  | DAW, Dante clock master |
+| Audio Network |  |  | Dante routing |
+| Video Capture | Desktop Video |  | DeckLink drivers |
+| Audio Interface |  Drivers |  |  support |
+| Graphics |  (optional) | - | Real-time graphics |
 
 ---
 
@@ -42,19 +42,19 @@ This document provides the definitive software installation guide for the Multi-
 
 | Component | Current Setup |
 |-----------|---------------|
-| Computer | Mac Studio |
-| Chip | M1 Ultra |
-| RAM | 128GB |
-| Video Capture | Blackmagic Design DeckLink Quad HDMI |
-| Audio Interface | MOTU 8PRE-ES |
-| Thunderbolt Chassis | Echo Express SE I |
+| Computer |  |
+| Chip |  |
+| RAM | GB |
+| Video Capture |   |
+| Audio Interface |   |
+| Thunderbolt Chassis |  |
 
 ### macOS Requirements
 
 | Requirement | Version |
 |-------------|---------|
-| macOS | 13.0+ (Ventura) |
-| Current OS | 14.2.1 (Sonoma) |
+| macOS | .0+ () |
+| Current OS |  () |
 
 > ⚠️ Do not upgrade macOS without verifying driver compatibility.
 
@@ -68,12 +68,12 @@ These versions are tested and known to work together:
 
 | Software | Version | Bundle ID |
 |----------|---------|-----------|
-| macOS | 14.2.1 | - |
-| OBS Studio | 29.1.3 | `com.obsproject.obs-studio` |
-| Ableton Live | 12.0.10 | `com.ableton.live` |
-| Dante Controller | 4.5.3 | `com.audinate.dante.DanteController` |
-| Desktop Video (DeckLink) | 13.2 | - |
-| MOTU Drivers | 2.23.5 | - |
+| macOS |  | - |
+|  |  | `com.obsproject.obs-studio` |
+|  |  | `` |
+|  |  | `com.audinate.dante.DanteController` |
+| Desktop Video (DeckLink) |  | - |
+|  Drivers |  | - |
 
 ---
 
@@ -84,35 +84,35 @@ These versions are tested and known to work together:
 ```bash
 # Check current macOS version
 sw_vers -productVersion
-# Expected: 14.2.1 or compatible
+# Expected:  or compatible
 
 # Verify Apple Silicon
 uname -m
-# Expected: arm64
+# Expected: 
 ```
 
 ### 2. Install Required Applications
 
-1. **OBS Studio** v29.1.3
+1. **** v
    - Role: Video mixing, encoding, streaming
    - Download from official source
 
-2. **Ableton Live** v12.0.10
-   - Role: Audio mixing, Dante clock master
+2. **** v
+   - Role: 
    - Download from official source
 
-3. **Dante Controller** v4.5.3
+3. **** v
    - Role: Audio network routing and monitoring
    - Download from Audinate
 
 ### 3. Install Hardware Drivers
 
-1. **Blackmagic Design Desktop Video** v13.2
-   - For DeckLink Quad HDMI
-   - Architecture: arm64
+1. ** Desktop Video** v
+   - For 
+   - Architecture: 
 
-2. **MOTU Drivers** v2.23.5
-   - For 8PRE-ES
+2. ** Drivers** v
+   - For 
 
 ---
 

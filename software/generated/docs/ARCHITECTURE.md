@@ -22,23 +22,23 @@ This pipeline ingests 4K video from DSLR/mirrorless cameras, synchronizes audio 
 │  ├─ [Camera 3]                                              │
 │  └─ [Camera 4]               Callers (Remote)              │
 │       ↓                        └─ NDI OBS stream           │
-│  DeckLink Quad HDMI                    │
-│  (Echo Express SE I)        │
+│                      │
+│  ()        │
 │       ↓                                                     │
 │                                                             │
 ├─────────────────────────────────────────────────────────────┤
-│ CAPTURE LAYER (Mac Studio)          │
+│ CAPTURE LAYER ()          │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  OBS Studio              │
+│                │
 │  ├─ Scene 1: Camera quad (4K mosaic)                       │
 │  ├─ Scene 2: Single camera + caller                        │
 │  ├─ Scene 3: Screen share (graphics)                       │
-│  └─ Audio Input: MOTU │
-│                  8PRE-ES  │
+│  └─ Audio Input:  │
+│                    │
 │                                                             │
 │  Dante Network (audio sync)                                │
-│  ├─ 8PRE-ES (Dante I/O)  │
+│  ├─  (Dante I/O)  │
 │  ├─ Dante AVIO nodes (camera audio converters)             │
 │  └─ Sample clock: 48 kHz (broadcast standard)              │
 │                                                             │
@@ -46,12 +46,12 @@ This pipeline ingests 4K video from DSLR/mirrorless cameras, synchronizes audio 
 │ PROCESSING LAYER                                            │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  Ableton Live (audio mixing)   │
+│   (audio mixing)   │
 │  ├─ Input: Camera feeds (via Dante)                        │
 │  ├─ Master clock: Drives all Dante devices                 │
 │  └─ Output: Master mix → Audio Interface → OBS             │
 │                                                             │
-│  Blender (optional)      │
+│   (optional)      │
 │  ├─ Input: Generative parameters (MIDI from DAW)          │
 │  └─ Output: Screen share → OBS                             │
 │                                                             │
@@ -85,8 +85,8 @@ This pipeline ingests 4K video from DSLR/mirrorless cameras, synchronizes audio 
 
 ### 1. Capture Subsystem (HDMI + Video Capture)
 
-- **DeckLink Quad HDMI**: 4× HDMI input, outputs to PCIe
-- **Echo Express SE I**: Thunderbolt 3 enclosure, PCIe slot for capture card
+- ****: 4× HDMI input, outputs to PCIe
+- ****: thunderbolt3 enclosure, PCIe slot for capture card
 - **Protocol**: Uncompressed HDMI or HDCP-encrypted video
 - **Latency**: <1ms (hardware-based capture)
 - **Bandwidth**: ~1.5 Gbps per 4K30 stream
@@ -101,17 +101,17 @@ This pipeline ingests 4K video from DSLR/mirrorless cameras, synchronizes audio 
 
 **Components**:
 - **Dante Network**: Dedicated managed Ethernet switch
-- **8PRE-ES**: 24 in / 28 out channels
-- **Ableton Live**: Acts as Dante clock master
+- ****: 24 in / 28 out channels
+- ****: Acts as Dante clock master
 
 ### 3. Computer System
 
 | Specification | Value |
 |--------------|-------|
-| Model | Mac Studio |
-| Chip | M1 Ultra |
-| RAM | 128 GB |
-| OS | Sonoma 14.2.1 |
+| Model |  |
+| Chip |  |
+| RAM |  GB |
+| OS |   |
 
 ### 4. Network Configuration
 

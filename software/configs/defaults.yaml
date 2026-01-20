@@ -1,19 +1,75 @@
 # defaults.yaml - Base configuration inherited by all profiles
 #
-# These defaults can be overridden in profile-specific YAML files.
+# This file defines:
+#   1. Default production requirements (what the show needs)
+#   2. Scaling formulas for resource calculations
+#   3. Default thresholds and timing values
+#
+# Profile-specific YAML files override these values.
 # The generate-config.sh script merges defaults with profile values.
 
 profile:
   version: "1.0.0"
-  schema_version: "1"
+  schema_version: "2"
 
-# System requirements
-system:
-  required_os_major: 13
-  required_os_name: "Ventura"
-  required_arch: "arm64"
+# =============================================================================
+# PRODUCTION REQUIREMENTS (defaults - override in profiles)
+# =============================================================================
+# Production requirements define WHAT the show needs, independent of hardware.
+# These are used to calculate minimum resource requirements.
 
-# Performance thresholds
+production:
+  video:
+    cameras: 1                      # Number of camera angles
+    capture_resolution: "1080p30"   # Per-camera capture resolution
+    codec: "h264"                   # Capture codec
+  audio:
+    input_channels: 2               # Total audio inputs needed
+    output_channels: 2              # Mix outputs (stereo, 5.1, etc.)
+    sample_rate: 48000
+    bit_depth: 24
+  streaming:
+    output_resolution: "1080p30"
+    bitrate_kbps: 4500
+    platforms: 1                    # Simultaneous stream destinations
+
+# =============================================================================
+# SCALING FORMULAS
+# =============================================================================
+# These formulas derive minimum hardware requirements from production needs.
+# Scripts use these to calculate whether hardware meets requirements.
+
+scaling:
+  compute:
+    # RAM calculation: base + (per_camera * cameras)
+    # Example: 4 cameras = 8 + (4 * 4) = 24GB minimum
+    ram_base_gb: 8
+    ram_per_camera_gb: 4
+    ram_per_4k_camera_gb: 8         # Additional for 4K cameras
+    # CPU cores calculation
+    cores_base: 4
+    cores_per_camera: 1
+    cores_per_4k_camera: 2
+
+  capture:
+    # 1:1 for direct capture, could be 0.5 for NDI/network
+    inputs_per_camera: 1
+
+  audio:
+    # Stereo per camera plus base for mics/music
+    channels_per_camera: 2
+    base_channels: 4
+
+  network:
+    # Bandwidth in Mbps
+    bandwidth_base_mbps: 100        # Overhead
+    bandwidth_per_camera_mbps: 150  # ~150Mbps per 4K30 stream
+    bandwidth_per_1080p_camera_mbps: 50  # ~50Mbps per 1080p stream
+
+# =============================================================================
+# PERFORMANCE THRESHOLDS
+# =============================================================================
+
 thresholds:
   min_disk_space_gb: 50
   recommended_disk_space_gb: 100
@@ -22,13 +78,19 @@ thresholds:
   min_memory_free_mb: 4000
   recommended_memory_free_mb: 8000
 
-# Timing defaults
+# =============================================================================
+# TIMING DEFAULTS
+# =============================================================================
+
 timing:
   launch_delay_seconds: 3
   quit_timeout_seconds: 10
   health_check_wait_seconds: 30
 
-# Config directories to ensure exist
+# =============================================================================
+# CONFIG DIRECTORIES
+# =============================================================================
+
 config_dirs:
   - "software/configs/obs"
   - "software/configs/ableton"
