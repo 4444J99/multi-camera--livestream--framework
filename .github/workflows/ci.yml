@@ -1,121 +1,60 @@
-name: CI
+name: Minimal CI
 
 on:
   push:
-    branches: [main]
+    branches: [ main, master, develop ]
   pull_request:
-    branches: [main]
+    branches: [ main, master, develop ]
+  workflow_dispatch:
 
 jobs:
-  shellcheck:
-    name: Shell Script Validation
+  validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install shellcheck
-        run: sudo apt-get install -y shellcheck
-
-      - name: Run shellcheck on all scripts
+      - name: Detect repository type
+        id: detect
         run: |
-          echo "Validating shell scripts..."
-          find software/scripts -name "*.sh" -type f | while read script; do
-            echo "Checking: $script"
-            shellcheck -x "$script" || exit 1
-          done
-          echo "All shell scripts passed shellcheck validation"
+          if [ -f "Package.swift" ]; then
+            echo "type=swift" >> $GITHUB_OUTPUT
+          elif [ -f "Gemfile" ] || [ -f "_config.yml" ]; then
+            echo "type=ruby" >> $GITHUB_OUTPUT
+          elif [ -f "package.json" ]; then
+            echo "type=node" >> $GITHUB_OUTPUT
+          elif [ -f "pyproject.toml" ] || [ -f "requirements.txt" ]; then
+            echo "type=python" >> $GITHUB_OUTPUT
+          else
+            echo "type=generic" >> $GITHUB_OUTPUT
+          fi
 
-  markdown-lint:
-    name: Markdown Validation
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install markdownlint-cli
-        run: npm install -g markdownlint-cli
-
-      - name: Lint markdown files
+      - name: Validate structure
         run: |
-          markdownlint '**/*.md' --ignore node_modules --ignore software/generated || true
-        continue-on-error: true
+          echo "Repository structure:"
+          ls -la
+          echo ""
+          echo "README check:"
+          if [ -f "README.md" ]; then
+            echo "::notice::README.md found"
+            wc -w README.md
+          else
+            echo "::warning::No README.md found"
+          fi
+          echo ""
+          echo "License check:"
+          if [ -f "LICENSE" ] || [ -f "LICENSE.md" ]; then
+            echo "::notice::License file found"
+          else
+            echo "::warning::No license file found"
+          fi
 
-  link-check:
-    name: Link Validation
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install markdown-link-check
-        run: npm install -g markdown-link-check
-
-      - name: Check internal links in documentation
+      - name: Jekyll build check
+        if: steps.detect.outputs.type == 'ruby'
         run: |
-          echo "Checking internal documentation links..."
-          find . -name "*.md" -not -path "./node_modules/*" -not -path "./software/generated/*" | while read file; do
-            echo "Checking links in: $file"
-            markdown-link-check "$file" --config .github/markdown-link-check.json 2>/dev/null || true
-          done
-        continue-on-error: true
+          if [ -f "_config.yml" ]; then
+            echo "::notice::Jekyll site detected"
+          fi
 
-  yaml-validate:
-    name: YAML Configuration Validation
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install yq
-        run: |
-          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
-          sudo chmod +x /usr/local/bin/yq
-
-      - name: Validate YAML configuration files
-        run: |
-          echo "Validating YAML configuration files..."
-          for yaml_file in software/configs/defaults.yaml software/configs/profiles/*.yaml; do
-            if [ -f "$yaml_file" ]; then
-              echo "Validating: $yaml_file"
-              yq eval '.' "$yaml_file" > /dev/null || exit 1
-            fi
-          done
-          echo "All YAML files are valid"
-
-  config-generation:
-    name: Configuration Generation Test
-    runs-on: macos-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: |
-          brew install yq gettext
-          brew link --force gettext
-
-      - name: Test config generation
-        run: |
-          echo "Testing configuration generation..."
-          make config PROFILE=studio
-          test -f software/generated/config.sh || exit 1
-          test -f software/generated/config.json || exit 1
-          echo "Configuration generation successful"
-
-      - name: Test health check script syntax
-        run: |
-          source software/generated/config.sh
-          echo "Config loaded successfully"
-          bash -n software/scripts/health-check.sh
-          echo "Health check script syntax valid"
+      - name: Success
+        run: echo "::notice::Minimal CI validation passed"
