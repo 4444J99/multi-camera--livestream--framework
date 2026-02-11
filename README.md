@@ -7,6 +7,14 @@
 
 # Multi-Camera Livestream Framework
 
+[![CI](https://github.com/organvm-iii-ergon/multi-camera--livestream--framework/actions/workflows/ci.yml/badge.svg)](https://github.com/organvm-iii-ergon/multi-camera--livestream--framework/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-pending-lightgrey)](https://github.com/organvm-iii-ergon/multi-camera--livestream--framework)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/organvm-iii-ergon/multi-camera--livestream--framework/blob/main/LICENSE)
+[![Organ III](https://img.shields.io/badge/Organ-III%20Ergon-F59E0B)](https://github.com/organvm-iii-ergon)
+[![Status](https://img.shields.io/badge/status-active-brightgreen)](https://github.com/organvm-iii-ergon/multi-camera--livestream--framework)
+[![TypeScript](https://img.shields.io/badge/lang-TypeScript-informational)](https://github.com/organvm-iii-ergon/multi-camera--livestream--framework)
+
+
 **Professional multi-camera 4K live streaming pipeline with Dante audio synchronization. Open documentation. Any budget.**
 
 $3K to $50K+ | macOS + Apple Silicon | Dante Audio Sync | 4 Tested Profiles | [Quick Start](#quick-start) | [Profiles](#choose-your-profile) | [Why This Exists](#the-problem-this-framework-solves)
